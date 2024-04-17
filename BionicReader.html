@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline Bionic Reader</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    textarea {
+        width: 100%;
+        height: 200px;
+        font-size: 16px;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+    }
+
+    #output-container {
+        border: 2px solid #ccc;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    #output {
+        font-size: 18px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        width: 80%; /* Adjust width as needed */
+        margin: 0 auto; /* Center align */
+        text-align: center; /* Center align */
+    }
+</style>
+</head>
+<body>
+<h1>Offline Bionic Reader</h1>
+<input type="file" id="fileInput" accept=".pdf" />
+<textarea id="input" placeholder="Enter text here..."></textarea>
+<button onclick="generateBionicReading()">Generate Bionic Reading</button>
+<button onclick="clearText()">Clear Text</button>
+<button onclick="createPDF()">Create PDF</button>
+<div id="output-container">
+    <div id="output"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script>
+function generateBionicReading() {
+    const inputText = document.getElementById('input').value;
+    if (inputText) {
+        displayBionicReading(inputText);
+    } else {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const pdfText = event.target.result;
+                displayBionicReading(pdfText);
+            };
+            reader.readAsText(file);
+        } else {
+            alert('Please enter text or select a PDF file.');
+        }
+    }
+}
+
+function displayBionicReading(text) {
+    const bionicText = bionicReading(text);
+    document.getElementById('output').innerHTML = bionicText;
+}
+
+function bionicReading(text) {
+    const paragraphs = text.split(/\n\s*\n/); // Split text into paragraphs
+    const formattedParagraphs = paragraphs.map(paragraph => {
+        const words = paragraph.split(/\s+/); // Split each paragraph into words
+        const bionicWords = words.map(word => {
+            if (word.length <= 3) {
+                return word;
+            }
+            const bolded = '<b>' + word.slice(0, Math.ceil(word.length / 2)) + '</b>';
+            const rest = word.slice(Math.ceil(word.length / 2));
+            return bolded + rest;
+        });
+        return bionicWords.join(' '); // Join words back into a paragraph
+    });
+    return formattedParagraphs.join('<br><br>'); // Join paragraphs with double line breaks
+}
+
+function clearText() {
+    document.getElementById('input').value = '';
+    document.getElementById('output').innerHTML = '';
+}
+
+function createPDF() {
+    const doc = new jsPDF();
+    const inputText = document.getElementById('output').textContent;
+    doc.text(inputText, 10, 10);
+    doc.save('bionic_reading.pdf');
+}
+</script>
+</body>
+</html>
